@@ -5,7 +5,7 @@ const MAX_BIO_LENGTH = 200;
 const MAX_LINKS = 20;
 const MAX_LINK_TITLE_LENGTH = 80;
 const MAX_LINK_URL_LENGTH = 500;
-const MAX_AVATAR_LENGTH = 500_000;
+const MAX_AVATAR_LENGTH = 2_000_000;
 
 export function validateProfileForPublish(profile: Profile): string | null {
   const name = profile.name.trim();
@@ -32,7 +32,7 @@ export function validateProfileForPublish(profile: Profile): string | null {
   }
 
   if (profile.avatar && profile.avatar.length > MAX_AVATAR_LENGTH) {
-    return "Profile image is too large. Use a smaller photo.";
+    return "Profile image is too large. Try a smaller photo or re-upload to compress it.";
   }
 
   return null;
