@@ -3,6 +3,7 @@ import type { Profile } from "@/lib/types";
 import { publishProfile } from "@/lib/profiles";
 import { isSupabaseConfigured } from "@/lib/supabase/server";
 import { normalizeSlug, slugError } from "@/lib/slug";
+import { validateProfileForPublish } from "@/lib/validation";
 
 type PublishBody = {
   slug: string;
@@ -31,8 +32,9 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: validationError }, { status: 400 });
   }
 
-  if (!body.profile?.name?.trim()) {
-    return NextResponse.json({ error: "Add a name before publishing." }, { status: 400 });
+  const profileError = validateProfileForPublish(body.profile);
+  if (profileError) {
+    return NextResponse.json({ error: profileError }, { status: 400 });
   }
 
   try {
