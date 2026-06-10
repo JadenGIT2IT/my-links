@@ -1,14 +1,15 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useProfile } from "@/hooks/useProfile";
-import { THEMES } from "@/lib/themes";
-import { ProfileAvatar } from "./ProfileAvatar";
-import { LinkButton } from "./LinkButton";
+import type { PublishState } from "@/lib/types";
+import { loadPublishState, savePublishState } from "@/lib/storage";
+import { ProfileView } from "./ProfileView";
 import { EditPanel } from "./EditPanel";
 
 export function LinktreePage() {
   const [editing, setEditing] = useState(false);
+  const [publishState, setPublishState] = useState<PublishState | null>(null);
   const {
     profile,
     loaded,
@@ -21,23 +22,20 @@ export function LinktreePage() {
     moveLink,
   } = useProfile();
 
-  const theme = THEMES[profile.theme];
-  const activeLinks = profile.links.filter((l) => l.active);
-  const isDark = profile.theme === "midnight";
+  useEffect(() => {
+    setPublishState(loadPublishState());
+  }, []);
 
   if (!loaded) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
+      <div className="flex min-h-screen items-center justify-center bg-zinc-900">
         <div className="h-8 w-8 animate-spin rounded-full border-2 border-white/30 border-t-white" />
       </div>
     );
   }
 
   return (
-    <div
-      className="min-h-screen flex flex-col items-center px-4 py-12"
-      style={{ background: theme.gradient }}
-    >
+    <div className="relative">
       <button
         type="button"
         onClick={() => setEditing(true)}
@@ -54,67 +52,12 @@ export function LinktreePage() {
         </svg>
       </button>
 
-      <main className="w-full max-w-md flex flex-col items-center gap-6">
-        <ProfileAvatar src={profile.avatar} name={profile.name} />
-
-        <div className="text-center space-y-1">
-          <h1
-            className={`text-2xl font-bold tracking-tight ${
-              isDark ? "text-white" : "text-white drop-shadow-sm"
-            }`}
-          >
-            {profile.name}
-          </h1>
-          {profile.bio && (
-            <p
-              className={`text-sm leading-relaxed ${
-                isDark ? "text-white/70" : "text-white/90"
-              }`}
-            >
-              {profile.bio}
-            </p>
-          )}
-        </div>
-
-        <div className="w-full space-y-3 pt-2">
-          {activeLinks.length === 0 ? (
-            <button
-              type="button"
-              onClick={() => setEditing(true)}
-              className={`flex w-full items-center justify-center rounded-full border-2 border-dashed px-6 py-4 text-sm font-medium transition-all ${
-                isDark
-                  ? "border-white/30 text-white/60 hover:border-white/50 hover:text-white/80"
-                  : "border-white/40 text-white/70 hover:border-white/60 hover:text-white"
-              }`}
-            >
-              + Add your first link
-            </button>
-          ) : (
-            activeLinks.map((link) => (
-              <LinkButton
-                key={link.id}
-                link={link}
-                buttonClass={theme.button}
-                buttonHover={theme.buttonHover}
-              />
-            ))
-          )}
-        </div>
-
-        <footer className="mt-8">
-          <p
-            className={`text-xs ${
-              isDark ? "text-white/30" : "text-white/50"
-            }`}
-          >
-            my-links
-          </p>
-        </footer>
-      </main>
+      <ProfileView profile={profile} />
 
       {editing && (
         <EditPanel
           profile={profile}
+          publishState={publishState}
           onClose={() => setEditing(false)}
           onUpdateProfile={updateProfile}
           onSetAvatar={setAvatar}
@@ -123,6 +66,10 @@ export function LinktreePage() {
           onUpdateLink={updateLink}
           onRemoveLink={removeLink}
           onMoveLink={moveLink}
+          onPublishStateChange={(state) => {
+            setPublishState(state);
+            savePublishState(state);
+          }}
         />
       )}
     </div>

@@ -20,3 +20,8 @@ export type Profile = {
   theme: ThemeId;
   links: LinkItem[];
 };
+
+export type PublishState = {
+  slug: string;
+  editToken: string;
+};

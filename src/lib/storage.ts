@@ -1,6 +1,7 @@
-import type { Profile } from "./types";
+import type { Profile, PublishState } from "./types";
 
 const STORAGE_KEY = "my-links-profile";
+const PUBLISH_KEY = "my-links-publish";
 
 export const DEFAULT_PROFILE: Profile = {
   name: "Your Name",
@@ -42,4 +43,26 @@ export function saveProfile(profile: Profile): void {
 
 export function createId(): string {
   return crypto.randomUUID();
+}
+
+export function loadPublishState(): PublishState | null {
+  if (typeof window === "undefined") return null;
+
+  try {
+    const raw = localStorage.getItem(PUBLISH_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw) as PublishState;
+  } catch {
+    return null;
+  }
+}
+
+export function savePublishState(state: PublishState): void {
+  if (typeof window === "undefined") return;
+  localStorage.setItem(PUBLISH_KEY, JSON.stringify(state));
+}
+
+export function clearPublishState(): void {
+  if (typeof window === "undefined") return;
+  localStorage.removeItem(PUBLISH_KEY);
 }
